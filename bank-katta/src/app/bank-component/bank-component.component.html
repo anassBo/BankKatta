@@ -1,0 +1,73 @@
+<p>
+  bank-component demonstration
+</p>
+
+
+
+  <form #transactionForm="ngForm" >
+    
+      <div class="cross-validation" [class.cross-validation-error]="transactionForm.touched || transactionForm.dirty">
+        <div class="form-group">
+          <label for="accountId">Transaction account id</label>
+          <input id="trAccountId" name="trAccountId" class="form-control"
+                required minlength="1" 
+                [(ngModel)]="trAccountId" #accountId="ngModel" appOnlyNumber>
+
+          <div *ngIf="accountId.invalid && (accountId.dirty || accountId.touched)"
+              class="alert alert-danger">
+
+            <div *ngIf="accountId.errors.required">
+              account id is required.
+            </div>
+            <div *ngIf="accountId.errors.minlength">
+              account id must be at least 1 characters long.
+            </div>
+            <div *ngIf="accountId.errors.onlyNumber">
+              account id must be numeric.
+            </div>
+
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="transactionAmount">Transaction amount</label>
+          <input id="amount" class="form-control" name="amount"
+                #transactionAmount="ngModel"
+                [(ngModel)]="amount" required minlength="1" appOnlyNumber
+                
+                >
+
+         
+          <div *ngIf="transactionAmount.invalid && (transactionAmount.dirty || transactionAmount.touched)"
+              class="alert alert-danger">
+              <div *ngIf="transactionAmount.errors.required">
+                Transaction Amount is required.
+              </div>
+              <div *ngIf="transactionAmount.errors.minlength">
+                Transaction Amount must be at least 1 characters long.
+              </div>
+            <div *ngIf="transactionAmount.errors.onlyNumber">
+              transaction amount must be numeric.
+            </div>
+
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+     
+      <button type="button" [disabled]="transactionForm.invalid" class="btn btn-default" (click)="deposit(accountId.value, transactionAmount.value); accountId.value=''; transactionAmount.value=''">
+        deposit
+      </button> 
+      <button  type="button" [disabled]="transactionForm.invalid" class="btn btn-default" (click)="withdrawl(accountId.value, transactionAmount.value); accountId.value=''; transactionAmount.value=''">
+        withdrawl
+      </button>
+      <button type="button" [disabled]="transactionForm.invalid" class="btn btn-default" (click)="print(accountId.value); accountId.value=''; transactionAmount.value=''">
+        print statement
+      </button>
+      
+  </form>
+
+
