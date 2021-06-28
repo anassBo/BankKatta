@@ -22,5 +22,5 @@ public interface IBankService {
 	/*
 	 * this extra method should be removed when enabling the persistence: it exists here to simulate the Database filling
 	 */
-	public void AddToCache();
+	public void addToCache();
 }

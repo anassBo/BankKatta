@@ -27,7 +27,7 @@ public class BankStarter {
 	
 	@PostConstruct
     public void init() {
-        bankService.AddToCache();
+        bankService.addToCache();
     }
 	
 	

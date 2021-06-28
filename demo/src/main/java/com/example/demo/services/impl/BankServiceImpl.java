@@ -12,11 +12,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.constant.TransactionType;
 import com.example.demo.exceptions.UnauthorizedNullTransaction;
-import com.example.demo.exceptions.UnvalidAccountException;
+import com.example.demo.exceptions.InvalidAccountException;
 import com.example.demo.models.Account;
 import com.example.demo.models.Transaction;
 import com.example.demo.services.IBankService;
@@ -28,6 +30,8 @@ import com.google.common.util.concurrent.AtomicDouble;
  */
 @Service
 public class BankServiceImpl implements IBankService {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(BankServiceImpl.class);
 
 	//instead of DB persistence
 	//key=accountId, value=balance
@@ -53,7 +57,7 @@ public class BankServiceImpl implements IBankService {
 				Double newBalance = accountMap.get(transaction.getAccountId().toString()).addAndGet(amount);
 				accountMap.put(transaction.getAccountId().toString(),new AtomicDouble(newBalance)) ;
 			}else {
-				throw new UnvalidAccountException(transaction.getAccountId().toString());
+				throw new InvalidAccountException(transaction.getAccountId().toString());
 			}
 			if(historyMap.containsKey(transaction.getAccountId().toString())) {
 				//save transaction in historyMap
@@ -69,12 +73,10 @@ public class BankServiceImpl implements IBankService {
 					transactionList.add(transaction);
 				}
 			}else {
-				throw new UnvalidAccountException(transaction.getAccountId().toString());
+				throw new InvalidAccountException(transaction.getAccountId().toString());
 			}
 		}
-		//for test purpose: to remove afterwards
-		System.out.println("map "+accountMap);
-		System.out.println("historymap "+historyMap);
+
 		for(Map.Entry m : historyMap.entrySet())
 			((List<Transaction>) m.getValue()).stream().map(t->t.getCurrentBalance()).collect(Collectors.toList()).forEach(System.out::println);
 
@@ -100,11 +102,11 @@ public class BankServiceImpl implements IBankService {
 		if(transaction.getAccountId()!=null) {
 			if(accountMap.containsKey(transaction.getAccountId().toString())) {
 				//convert the amount to reflect that it is a withdrawl operation
-				Double amountToWithdrawl = amount>=0? -amount: amount;
+				Double amountToWithdrawl = amount >=0 ? -amount: amount;
 				Double newBalance = accountMap.get(transaction.getAccountId().toString()).addAndGet(amountToWithdrawl);
 				accountMap.put(transaction.getAccountId().toString(),new AtomicDouble(newBalance)) ;
 			}else {
-				throw new UnvalidAccountException(transaction.getAccountId().toString());
+				throw new InvalidAccountException(transaction.getAccountId().toString());
 			}
 			if(historyMap.containsKey(transaction.getAccountId().toString())) {
 				//save transaction in historyMap
@@ -120,12 +122,9 @@ public class BankServiceImpl implements IBankService {
 					transactionList.add(transaction);
 				}
 			}else {
-				throw new UnvalidAccountException(transaction.getAccountId().toString());
+				throw new InvalidAccountException(transaction.getAccountId().toString());
 			}
 		}
-		//for test purpose:: to remove afterwards
-		System.out.println("map "+accountMap);
-		System.out.println("historymap "+historyMap);
 		for(Map.Entry m : historyMap.entrySet())
 			((List<Transaction>) m.getValue()).stream().map(t->t.getCurrentBalance()).collect(Collectors.toList()).forEach(System.out::println);
 
@@ -136,7 +135,6 @@ public class BankServiceImpl implements IBankService {
 	@Override
 	public String printStatement(String accountId) {
 		if(accountId!=null) {
-			//to ensure synchronize on appending the string for threadsafety purpose
 			StringBuffer sb = new StringBuffer();
 			sb.append("date | amount | operation type | balance");
 			sb.append(System.getProperty("line.separator"));
@@ -151,7 +149,7 @@ public class BankServiceImpl implements IBankService {
 			}
 			return sb.toString();
 		}
-		throw new UnvalidAccountException(accountId);
+		throw new InvalidAccountException(accountId);
 	}
 
 	//private utility method
@@ -168,7 +166,7 @@ public class BankServiceImpl implements IBankService {
 	 * this method will be called by the singleton component BankStarter that will simulate populating the database with some accounts to feed the accountMap and historyMap caches
 	 * this method should be dropped in a real project with persistence enabled
 	 */
-	public void AddToCache() {
+	public void addToCache() {
 		//add some acountId to the cache to replace the DB content 
 		accountMap.putIfAbsent("1", new AtomicDouble(100));
 		accountMap.putIfAbsent("2", new AtomicDouble(200));
@@ -176,8 +174,8 @@ public class BankServiceImpl implements IBankService {
 		historyMap.putIfAbsent("1", new ArrayList<>());
 		historyMap.putIfAbsent("2", new ArrayList<>());
 		historyMap.putIfAbsent("3", new ArrayList<>());
-		System.out.println("initial map "+accountMap);
-		System.out.println("initial historymap "+historyMap);
+		LOGGER.info("initial map [{}]", accountMap);
+		LOGGER.info("initial historymap [{}]", historyMap);
 	}
 
 

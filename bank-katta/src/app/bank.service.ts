@@ -12,63 +12,63 @@ import { catchError, map, tap } from 'rxjs/operators';
 export class BankService {
 
   constructor(private http: HttpClient, private messageService: MessageService) { }
-   
+
   private apiUrl = 'http://localhost:8080/api';  // URL to web api
 
   deposit(transaction: Transaction): Observable<String> {
     const httpOptions = {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' })
     };
-    // TODO: send the message _after_ fetching the hero
+
     const url = `${this.apiUrl}/deposit/${transaction.accountId}?amount=${transaction.amount}`;
-    
+
     return this.http.get(url, {responseType: 'text'}).pipe(
       map(this.extractData),
       tap(_ => this.log(`front end credit call of amount=${transaction.amount} to accountId=${transaction.accountId} was performed successfully`)),
       catchError(this.handleError<string>(`deposit accountId=${transaction.accountId}, amount=${transaction.amount}`))
     );
- 
+
   }
 
   withdrawl(transaction: Transaction): Observable<String> {
     const httpOptions = {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' })
     };
-    // TODO: send the message _after_ fetching the hero
+
     const url = `${this.apiUrl}/withdrawl/${transaction.accountId}?amount=${transaction.amount}`;
-     
+
     return this.http.get(url, {responseType: 'text'}).pipe(
       map(this.extractData),
       tap(_ => this.log(`front end debit call of amount=${transaction.amount} to accountId=${transaction.accountId} was performed successfully`)),
       catchError(this.handleError<string>(`withdrawl accountId=${transaction.accountId}, amount=${transaction.amount}`))
     );
- 
+
   }
 
   print(transaction: Transaction): Observable<String> {
     const httpOptions = {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' })
     };
-    // TODO: send the message _after_ fetching the hero
+
     const url = `${this.apiUrl}/printStatement/${transaction.accountId}`;
-   
+
     return this.http.get(url, {responseType: 'text'}).pipe(
       map(this.extractData),
       tap(_ => this.log(`front end print call of account id=${transaction.accountId} statement was performed successfully`)),
       catchError(this.handleError<string>(`print accountId=${transaction.accountId}`))
     );
- 
+
   }
-  	
+
  extractData(res: any){
-   
+
   const body = res instanceof Response?res.json(): res;
-   
+
   return body;
 	}
 
 
- 
+
   /** Log a message with the MessageService */
 private log(message: string) {
   this.messageService.add('BankService: ' + message);
